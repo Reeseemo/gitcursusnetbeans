@@ -25,10 +25,9 @@ public class Mens implements Comparable<Mens> {
 
     public Mens(String naam, Rijbewijs... rb) {
         this.naam = naam;
-        if (rb.length >= 1) {
+        if (rb.length > 0) {
             rijbewijzen.addAll(Arrays.asList(rb));
-
-        }
+        } 
     }
 
     public String getNaam() {
@@ -72,6 +71,10 @@ public class Mens implements Comparable<Mens> {
     public Object[] getRijbewijs() {
         Object[] arr1 = rijbewijzen.toArray();
         return arr1;
+    }
+
+    public Set<Rijbewijs> getRijbewijzen() {
+        return rijbewijzen;
     }
 
     @Override

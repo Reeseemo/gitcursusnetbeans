@@ -14,7 +14,6 @@ import be.vdab.voertuigen.div.Nummerplaat;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -23,7 +22,7 @@ import java.util.TreeSet;
  *
  * @author elvira.iskhakova
  */
-public class Voertuig implements Serializable, Comparable<Voertuig> {
+public abstract class Voertuig implements Serializable, Comparable<Voertuig> {
 
     final Nummerplaat nplaat = DIV.INSTANCE.getNummerplaat();
     String merk;
@@ -49,7 +48,7 @@ public class Voertuig implements Serializable, Comparable<Voertuig> {
 
         if (passagiers.length >= 1 && passagiers.length < zitplaatsen) {
             inzittenden.addAll(Arrays.asList(passagiers));
-        } 
+        }
     }
 
     public Mens getBestuurder() {
@@ -57,11 +56,13 @@ public class Voertuig implements Serializable, Comparable<Voertuig> {
     }
 
     public final void setBestuurder(Mens bestuurder) {
-        if (bestuurder != null) {
-            this.bestuurder = bestuurder;
-            inzittenden.add(bestuurder);
+        if (bestuurder != null && bestuurder.getRijbewijs().length != 0) {
+
+                    this.bestuurder = bestuurder;
+                    inzittenden.add(bestuurder);
+                
         } else {
-            throw new IllegalArgumentException();
+            throw new MensException();
         }
     }
 
@@ -101,17 +102,11 @@ public class Voertuig implements Serializable, Comparable<Voertuig> {
         }
     }
 
-    public void setInzittenden(Set<Mens> inzittenden) {
-        this.inzittenden = inzittenden;
-    }
-
     public Nummerplaat getNummerplaat() {
         return nplaat;
     }
 
-    protected int getMAX_ZITPLAATSEN() {
-        return MAX_ZITPLAATSEN;
-    }
+    protected abstract int getMAX_ZITPLAATSEN();
 
     @Override
     public int hashCode() {
@@ -155,9 +150,7 @@ public class Voertuig implements Serializable, Comparable<Voertuig> {
         return nplaat.compareTo(v.getNummerplaat());
     }
 
-    protected Rijbewijs[] getToegestaneRijbewijzen() {
-        return new Rijbewijs[]{Rijbewijs.B, Rijbewijs.BE};
-    }
+    protected abstract Rijbewijs[] getToegestaneRijbewijzen();
 
     static Comparator<Voertuig> getMerkComparator() {
         return (Voertuig one, Voertuig two) -> one.getMerk().compareTo(two.getMerk());
@@ -177,13 +170,12 @@ public class Voertuig implements Serializable, Comparable<Voertuig> {
         passagiers.remove(bestuurder);
         return passagiers;
     }
-    
-        public void addIngezetene(Mens m) {
+
+    public void addIngezetene(Mens m) {
         if (inzittenden.size() < MAX_ZITPLAATSEN) {
             inzittenden.add(m);
-        } else {
-            throw new MensException();
         }
+
     }
 
     public Set getIngezetenen() {
