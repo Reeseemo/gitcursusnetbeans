@@ -83,11 +83,9 @@ public class Mens implements Comparable<Mens> {
 
         if (sortedList.size() > 0) {
             sb1.append(sortedList);
-            //sb1.append(String.join(", ", sortedList.toString()));
             sb1.setCharAt(sb1.toString().indexOf('['), '(');
             sb1.setCharAt(sb1.toString().indexOf(']'), ')');
         }
-
         return sb1.toString();
 
     }
