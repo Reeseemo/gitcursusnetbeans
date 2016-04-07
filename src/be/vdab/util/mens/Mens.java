@@ -5,23 +5,22 @@
  */
 package be.vdab.util.mens;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  *
  * @author elvira.iskhakova
  */
-public class Mens implements Comparable<Mens> {
+public class Mens implements Serializable, Comparable<Mens> {
 
     String naam;
     Rijbewijs r1;
-    Set<Rijbewijs> rijbewijzen = new HashSet<>();
+    Set<Rijbewijs> rijbewijzen = new TreeSet<>();
+    
 
     public Mens(String naam, Rijbewijs... rb) {
         this.naam = naam;
@@ -68,29 +67,19 @@ public class Mens implements Comparable<Mens> {
         return true;
     }
 
-    public Object[] getRijbewijs() {
-        Object[] arr1 = rijbewijzen.toArray();
-        return arr1;
-    }
-
-    public Set<Rijbewijs> getRijbewijzen() {
-        return rijbewijzen;
+    public Rijbewijs[] getRijbewijs() {
+        return rijbewijzen.toArray(new Rijbewijs[rijbewijzen.size()]);
     }
 
     @Override
     public String toString() {
-        List sortedList = new ArrayList(rijbewijzen);
-        Collections.sort(sortedList);
-
         StringBuilder sb1 = new StringBuilder(naam);
-
-        if (sortedList.size() > 0) {
-            sb1.append(sortedList);
+        if (rijbewijzen.size() > 0) {
+            sb1.append(rijbewijzen);
             sb1.setCharAt(sb1.toString().indexOf('['), '(');
             sb1.setCharAt(sb1.toString().indexOf(']'), ')');
         }
         return sb1.toString();
-
     }
-
+    
 }

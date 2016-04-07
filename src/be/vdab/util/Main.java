@@ -6,17 +6,24 @@
 package be.vdab.util;
 
 import be.vdab.util.mens.Mens;
-import be.vdab.util.mens.Rijbewijs;
-import static be.vdab.util.mens.Rijbewijs.A;
 import static be.vdab.util.mens.Rijbewijs.B;
 import static be.vdab.util.mens.Rijbewijs.BE;
 import static be.vdab.util.mens.Rijbewijs.C;
 import static be.vdab.util.mens.Rijbewijs.CE;
+import be.vdab.voertuigen.Personenwagen;
+import be.vdab.voertuigen.Pickup;
 import be.vdab.voertuigen.Voertuig;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import be.vdab.voertuigen.Vrachtwagen;
+import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import static java.lang.System.in;
+import java.util.TreeSet;
 
 /**
  *
@@ -24,44 +31,68 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-    /**
-     * @param args the command line arguments
-     * @throws be.vdab.util.DatumException
-     */
-    public static void main(String[] args) throws DatumException {
-//        Datum datum = new Datum(1, 2, 3456);
-//        final int AANTAL_INZITTENDEN = 3;
-//        final int MAX_ZITPLAATSEN = 3;
-//        Mens BESTUURDER_BBECCE = new Mens("Ammelie", B, BE, C, CE);
-//        Mens INGEZETENE_A = new Mens("Anita");
-//        Mens INGEZETENE_B = new Mens("Bert");
-//        String datumString = "01/02/3456";
-        
-        
-//        Voertuig tv = new Voertuig("auto", datum, 18300, AANTAL_INZITTENDEN, BESTUURDER_BBECCE, INGEZETENE_A, INGEZETENE_B);
-//        System.out.println(tv.toString());
-//        tv.addIngezetene(INGEZETENE_A);
-//        System.out.println(tv.getIngezetenen());
-        
+    public static void main(String[] args) throws DatumException, VolumeException, FileNotFoundException {
+        TreeSet<Voertuig> vset = new TreeSet<>();
+        TreeSet<Voertuig> vset2 = new TreeSet<>(Voertuig.getAankoopprijsComparator());
+        TreeSet<Voertuig> vset3 = new TreeSet<>(Voertuig.getMerkComparator());
+        TreeSet<Voertuig> vset4 = new TreeSet<>();
 
-//        Voertuig tv3 = new Voertuig("auto", datum, 18300, AANTAL_INZITTENDEN, BESTUURDER_BBECCE);
-//        System.out.println(tv3.toString());
-        
+        Datum datum = new Datum(1, 2, 3456);
+        Mens BESTUURDER_BBECCE = new Mens("Ammelie", B, BE, C, CE);
+        Volume VOLUME10 = new Volume(10, 10, 10, Maat.decimeter);
+        Personenwagen v1 = new Personenwagen("Fiat", datum, 21000, 4, Color.RED, BESTUURDER_BBECCE);
+        Personenwagen v2 = new Personenwagen("Toyota", datum, 18000, 5, Color.BLACK, BESTUURDER_BBECCE);
+        Pickup v3 = new Pickup("Cadilac", datum, 21000, 5, Color.DARK_GRAY, VOLUME10, BESTUURDER_BBECCE);
+        Pickup v4 = new Pickup("Toyota", datum, 19000, 5, Color.ORANGE, VOLUME10, BESTUURDER_BBECCE);
+        Vrachtwagen v5 = new Vrachtwagen("Man", datum, 68000, 3, VOLUME10, 7500, 2, BESTUURDER_BBECCE);
+        Vrachtwagen v6 = new Vrachtwagen("Scania", datum, 58000, 3, VOLUME10, 20000, 2, BESTUURDER_BBECCE);
 
-        //     Mens m1 = new Mens("Andree", A, B);
-        //        System.out.println(m1.toString());
-        //        for (Object o : m1.getRijbewijs()){
-        //        System.out.println(Arrays.toString(m1.getRijbewijs()));
-        //        }
-        //        try {
-        //            Datum d1 = new Datum(22, 4, 1988);
-        //
-        //            System.out.println(d1.toString());
-        //        } catch (DatumException ex) {
-        //            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        //        }
-        //        
-        //        
+        vset.add(v1);
+        vset.add(v2);
+        vset.add(v3);
+        vset.add(v4);
+        vset.add(v5);
+        vset.add(v6);
+
+        vset2.addAll(vset);
+        vset2 = (TreeSet) vset2.descendingSet();
+        vset3.addAll(vset);
+
+        System.out.println("Natural:");
+        for (Voertuig v : vset) {
+            System.out.println(v);
+        }
+
+        System.out.println("\nAankoopprijs in omgekeerde volgorde:");
+        for (Voertuig v : vset2) {
+            System.out.println(v);
+        }
+
+        System.out.println("\nMerk:");
+        for (Voertuig v : vset3) {
+            System.out.println(v);
+        }
+
+        try (FileOutputStream fos = new FileOutputStream("F:\\Main\\JPF\\AutoWorld\\wagenpark.ser");
+                ObjectOutputStream oos = new ObjectOutputStream(fos);) {
+            for (Voertuig v : vset3) {
+                oos.writeObject(v);
+            }
+        } catch (IOException e) {
+        }
+        try (FileInputStream fis = new FileInputStream("F:\\Main\\JPF\\AutoWorld\\wagenpark.ser");
+                ObjectInputStream ois = new ObjectInputStream(fis);) {
+            while (true) {
+                vset4.add((Voertuig) ois.readObject());
+            }
+
+        } catch (ClassNotFoundException | IOException e) {
+        }
+
+        System.out.println("\nIngelezen set:");
+        for (Voertuig v : vset4) {
+            System.out.println(v);
+        }
     }
 
 }

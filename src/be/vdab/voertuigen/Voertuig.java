@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  *
@@ -28,7 +29,7 @@ public abstract class Voertuig implements Serializable, Comparable<Voertuig> {
     String merk;
     Datum DatumEersteIngebruikname;
     int aankoopprijs;
-    final int MAX_ZITPLAATSEN;
+    final int ZITPLAATSEN;
     Mens bestuurder;
     Set<Mens> inzittenden = new TreeSet<>();
 
@@ -38,17 +39,23 @@ public abstract class Voertuig implements Serializable, Comparable<Voertuig> {
         setMerk(merk);
         setDatumEersteIngebruikname(datumEersteIngebruikname);
         setAankoopprijs(aankoopprijs);
-        setBestuurder(bestuurder);
 
-        if (zitplaatsen > 0) {
-            this.MAX_ZITPLAATSEN = zitplaatsen;
+        if (zitplaatsen > 0  && zitplaatsen <= getMAX_ZITPLAATSEN()) {
+            this.ZITPLAATSEN = zitplaatsen;
         } else {
             throw new IllegalArgumentException();
         }
 
-        if (passagiers.length >= 1 && passagiers.length < zitplaatsen) {
-            inzittenden.addAll(Arrays.asList(passagiers));
+        Set<Mens> passagiersSet = new TreeSet<>(Arrays.asList(passagiers));
+        passagiersSet.remove(bestuurder);
+        if (passagiersSet.size()<zitplaatsen) {
+            inzittenden.addAll(passagiersSet);
+        }else{
+            throw new MensException();
         }
+
+        setBestuurder(bestuurder);
+
     }
 
     public Mens getBestuurder() {
@@ -56,14 +63,39 @@ public abstract class Voertuig implements Serializable, Comparable<Voertuig> {
     }
 
     public final void setBestuurder(Mens bestuurder) {
-        if (bestuurder != null && bestuurder.getRijbewijs().length != 0) {
+        if (bestuurder != null && bestuurder.getRijbewijs() != null
+                && CollectionUtils.containsAny(Arrays.asList(bestuurder.getRijbewijs()), Arrays.asList(getToegestaneRijbewijzen()))) {
 
-                    this.bestuurder = bestuurder;
-                    inzittenden.add(bestuurder);
-                
+            if (inzittenden.contains(bestuurder)) {
+                this.bestuurder = bestuurder;
+            } else if (inzittenden.size() < ZITPLAATSEN) {
+                this.bestuurder = bestuurder;
+                inzittenden.add(bestuurder);
+            } else {
+                throw new MensException();
+            }
         } else {
             throw new MensException();
         }
+    }
+
+    public Set getIngezeteneExclusiefBestuurder() {
+        Set<Mens> passagiers = new TreeSet<>();
+        passagiers.addAll(inzittenden);
+        passagiers.remove(bestuurder);
+        return passagiers;
+    }
+
+    public void addIngezetene(Mens m) {
+        if (inzittenden.size() < ZITPLAATSEN || inzittenden.contains(m)) {
+            inzittenden.add(m);
+        } else {
+            throw new MensException();
+        }
+    }
+
+    public Set getIngezetenen() {
+        return inzittenden;
     }
 
     public String getMerk() {
@@ -105,8 +137,6 @@ public abstract class Voertuig implements Serializable, Comparable<Voertuig> {
     public Nummerplaat getNummerplaat() {
         return nplaat;
     }
-
-    protected abstract int getMAX_ZITPLAATSEN();
 
     @Override
     public int hashCode() {
@@ -152,34 +182,20 @@ public abstract class Voertuig implements Serializable, Comparable<Voertuig> {
 
     protected abstract Rijbewijs[] getToegestaneRijbewijzen();
 
-    static Comparator<Voertuig> getMerkComparator() {
-        return (Voertuig one, Voertuig two) -> one.getMerk().compareTo(two.getMerk());
+    protected abstract int getMAX_ZITPLAATSEN();
+    
+    public interface SerializableComparator<T> extends Serializable,Comparator<T>{}
+
+    public static Comparator<Voertuig> getMerkComparator() {
+        return (SerializableComparator < Voertuig>)(Voertuig one, Voertuig two) -> one.getMerk().compareTo(two.getMerk());
     }
 
-    static Comparator<Voertuig> getAankoopprijsComparator() {
-        return (Voertuig one, Voertuig two) -> one.getAankoopprijs() - two.getAankoopprijs();
+    public static Comparator<Voertuig> getAankoopprijsComparator() {
+        return (SerializableComparator < Voertuig>)(Voertuig one, Voertuig two) -> one.getAankoopprijs() - two.getAankoopprijs();
     }
 
     public boolean isIngezetene(Mens m) {
         return inzittenden.contains(m);
-    }
-
-    public Set getIngezeteneExclusiefBestuurder() {
-        Set<Mens> passagiers = new TreeSet<>();
-        passagiers.addAll(inzittenden);
-        passagiers.remove(bestuurder);
-        return passagiers;
-    }
-
-    public void addIngezetene(Mens m) {
-        if (inzittenden.size() < MAX_ZITPLAATSEN) {
-            inzittenden.add(m);
-        }
-
-    }
-
-    public Set getIngezetenen() {
-        return inzittenden;
     }
 
 }
